@@ -7,8 +7,6 @@ import pyautogui as keyboard # noqa
 import os
 import importlib
 
-from TrainControllerV2 import frequency
-
 image = ''
 maximum_values = {}
 ready_flag = ''
@@ -157,14 +155,12 @@ def configsetup():
     global thrust_pos, brake_pos, brakeloc_pos, sand_pos, locomotives_count, ButConfig
     if os.path.exists('config.ini'):
         config.read('config.ini')
-        default_game_number = config['HOST']['default_game_number']
+        default_game_number = int(config['HOST']['default_game_number'])
         default_game_name = config['GAME_PROFILES'][f'game_name.{default_game_number}']
-        game_profile_type = config['GAME_PROFILES'][f'game_profile_type.{default_game_number}']
+        game_profile_type = int(config['GAME_PROFILES'][f'game_profile_type.{default_game_number}'])
         port = int(config['NETWORK']['Port'])
-        clients_number = int(config['NETWORK']['ClientsNumber'])
+        clients_number = int(config['NETWORK']['clients_number'])
         frequency = int(config['EV3']['Frequency'])
-        type = int(config['EV3']['Type'])
-        usedisp = int(config['EV3']['UseDisp'])
 
         if os.path.exists('game profiles'):
             if game_profile_type == 0 and os.path.exists(f'game profiles/{default_game_name}.ini'):
@@ -233,18 +229,17 @@ def configcreate():
         'game_profiles_counter': str(game_profiles_counter)
     }
     for i in range(1, game_profiles_counter + 1):
-        config['GAME_PROFILES'] = {
-            f'game_name.{i}': input(f'Enter game name {i}: '),
-            f'game_profile_type.{i}': input(f'Enter game profile type {i}: '),
-        }
-    default_game_name = config['GAME_PROFILES'][f'game_name.{default_game_number}']
-    game_profile_type = config['GAME_PROFILES'][f'game_profile_type.{default_game_number}']
+        config.set('GAME_PROFILES', f'game_name.{i}', input(f'Enter game name {i}: '))
+        config.set('GAME_PROFILES', f'game_profile_type.{i}', input(f'Enter game profile type {i}: '))
     try:
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
         print('Config created, remember to config game profile before starting program')
     except Exception as e:
         print('Cannot create config file:', e)
+    config.read('config.ini')
+    default_game_name = config['GAME_PROFILES'][f'game_name.{default_game_number}']
+    game_profile_type = config['GAME_PROFILES'][f'game_profile_type.{default_game_number}']
     exit('TODO')
 
 def butpress():
