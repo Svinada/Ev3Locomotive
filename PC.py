@@ -118,6 +118,7 @@ def configupdate():
                 print('config not found with name', default_game_name)
                 configcreate()
             selected_locomotive = config['LOCOMOTIVES'][str(selected_locomotive_number)]
+            but_timeout_timer = int(config[selected_locomotive]['but_timeout_timer'])
             thrust_button_up = config[selected_locomotive]['thrust_button_up']
             thrust_button_down = config[selected_locomotive]['thrust_button_down']
             brake_button_up = config[selected_locomotive]['brake_button_up']
@@ -147,6 +148,7 @@ def configupdate():
             locomotives_count = int(config['LOCOMOTIVES']['locomotives_count'])
             selected_locomotive_number = 1
             selected_locomotive = config['LOCOMOTIVES'][str(selected_locomotive_number)]
+            but_timeout_timer = int(config[selected_locomotive]['but_timeout_timer'])
             thrust_button_up = config[selected_locomotive]['thrust_button_up']
             thrust_button_down = config[selected_locomotive]['thrust_button_down']
             brake_button_up = config[selected_locomotive]['brake_button_up']
@@ -188,6 +190,7 @@ def configsetup():
                 locomotives_count = int(config['LOCOMOTIVES']['locomotives_count'])
                 selected_locomotive = config['LOCOMOTIVES']['1']
                 selected_locomotive_number = 1
+                but_timeout_timer = int(config[selected_locomotive]['but_timeout_timer'])
                 thrust_button_up = config[selected_locomotive]['thrust_button_up']
                 thrust_button_down = config[selected_locomotive]['thrust_button_down']
                 brake_button_up = config[selected_locomotive]['brake_button_up']
