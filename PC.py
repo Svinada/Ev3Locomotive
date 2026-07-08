@@ -13,7 +13,8 @@ ready_flag = ''
 trains = []
 sand_counter = 0
 but_press_delay = 0.1
-but_timeout = 0
+but_timeout_flag = 0
+but_timeout_timer = 5
 counter = 0
 setup_1 = 0
 setup_2 = 0
@@ -100,7 +101,7 @@ def getinfo():
 
 def configupdate():
     global default_game_name, thrust_button_up, thrust_button_down, brake_button_up, brake_button_down, brake_locomotive_button_up, brake_locomotive_button_down, reverse_button_up, reverse_button_down, sand_button_up, sand_button_down
-    global thrust_pos, brake_pos, brakeloc_pos, sand_pos, selected_locomotive, ButConfig, game_profile_type, locomotives_count, selected_locomotive_number
+    global thrust_pos, brake_pos, brakeloc_pos, sand_pos, selected_locomotive, ButConfig, game_profile_type, locomotives_count, selected_locomotive_number, but_timeout_timer
     if game_profile_selecting_flag == 0:
         if game_profile_type == 0:
             if os.path.exists(f'game profiles/{default_game_name}.ini'):
@@ -154,14 +155,15 @@ def configupdate():
             sand_pos = int(config[selected_locomotive]['sand_position_number'])
         if game_profile_type == 1:
             ButConfig = importlib.import_module(f'game profiles.{default_game_name}')
+            but_timeout_timer = ButConfig.but_timeout_timer
             locomotives_count = ButConfig.locomotives_count
-            selected_locomotive_number = ButConfig.selected_locomotive_number
+            selected_locomotive_number = 1
     print('locomotive config updated')
 
 def configsetup():
     global default_game_name, port, clients_number, frequency, game_profile_type, selected_locomotive, selected_locomotive_number, default_game_number
     global thrust_button_up, thrust_button_down, brake_button_up, brake_button_down, brake_locomotive_button_up, brake_locomotive_button_down, reverse_button_up, reverse_button_down, sand_button_up, sand_button_down
-    global thrust_pos, brake_pos, brakeloc_pos, sand_pos, locomotives_count, ButConfig, game_profiles_counter
+    global thrust_pos, brake_pos, brakeloc_pos, sand_pos, locomotives_count, ButConfig, game_profiles_counter, but_timeout_timer
     if os.path.exists('config.ini'):
         config.read('config.ini')
         default_game_number = int(config['HOST']['default_game_number'])
@@ -194,28 +196,52 @@ def configsetup():
                 sand_pos = int(config[selected_locomotive]['sand_position_number'])
             elif game_profile_type == 1 and os.path.exists(f'game profiles/{default_game_name}.py'):
                 ButConfig = importlib.import_module(f'game profiles.{default_game_name}')
+                but_timeout_timer = ButConfig.but_timeout_timer
+                locomotives_count = ButConfig.locomotives_count
+                selected_locomotive_number = 1
             else:
-                print('config not found with name', default_game_name)
-                exit('TODO')
+                configcreate()
         else:
-            print('directory "game profiles" not found')
-            try:
-                os.mkdir('game profiles')
-                print('create one in script folder, remember to add your .ini/.py file')
-            except Exception as e:
-                print('Cannot create folder:',e)
-            exit('TODO')
+            configcreate()
     else:
         configcreate()
 
 def configcreate():
-    global default_game_name, clients_number, port, frequency, game_profiles_counter, game_profile_type, default_game_number
-    print('No config file, creating new')
-    default_game_number = int(input('Enter default game number (default 1): '))
-    clients_number = int(input('Enter number of clients: '))
-    port = int(input('Enter port: '))
-    frequency = int(input('Enter frequency: '))
-    game_profiles_counter = int(input('Enter number of game profiles: '))
+    global default_game_name, clients_number, port, frequency, game_profiles_counter, game_profile_type, default_game_number, locomotives_count, selected_locomotive, selected_locomotive_number
+    if not os.path.exists('config.ini'):
+        print('No config file, creating new')
+        default_game_number = int(input('Enter default game number (default 1): '))
+        clients_number = int(input('Enter number of clients: '))
+        port = int(input('Enter port: '))
+        frequency = int(input('Enter frequency: '))
+        game_profiles_counter = int(input('Enter number of game profiles: '))
+        config['HOST'] = {
+            'default_game_number': str(default_game_number),
+        }
+        config['NETWORK'] = {
+            'port': str(port),
+            'clients_number': str(clients_number)
+        }
+        config['EV3'] = {
+            'frequency': str(frequency)
+        }
+        config['GAME_PROFILES'] = {
+            'game_profiles_counter': str(game_profiles_counter)
+        }
+        for i in range(1, game_profiles_counter + 1):
+            config.set('GAME_PROFILES', f'game_name.{i}', input(f'Enter game name {i}: '))
+            config.set('GAME_PROFILES', f'game_profile_type.{i}', input(f'Enter game profile type {i}: '))
+        try:
+            configfile = open('config.ini', 'w')
+            config.write(configfile)
+        except Exception as e:
+            print('Cannot create config file:', e)
+    else:
+        default_game_number = int(config['HOST']['default_game_number'])
+        clients_number = int(config['NETWORK']['clients_number'])
+        port = int(config['NETWORK']['port'])
+        frequency = int(config['EV3']['frequency'])
+        game_profiles_counter = int(config['GAME_PROFILES']['game_profiles_counter'])
     if not os.path.exists('game profiles'):
         try:
             os.mkdir('game profiles')
@@ -223,37 +249,73 @@ def configcreate():
         except Exception as e:
             print('Cannot create folder:', e)
             exit()
-    else:
-        print('"game profiles" folder already exists')
-    config['HOST'] = {
-        'default_game_number': str(default_game_number),
-    }
-    config['NETWORK'] = {
-        'port': str(port),
-        'clients_number': str(clients_number)
-    }
-    config['EV3'] = {
-        'frequency': str(frequency)
-    }
-    config['GAME_PROFILES'] = {
-        'game_profiles_counter': str(game_profiles_counter)
-    }
-    for i in range(1, game_profiles_counter + 1):
-        config.set('GAME_PROFILES', f'game_name.{i}', input(f'Enter game name {i}: '))
-        config.set('GAME_PROFILES', f'game_profile_type.{i}', input(f'Enter game profile type {i}: '))
-    try:
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-        print('Config created, remember to config game profile before starting program')
-    except Exception as e:
-        print('Cannot create config file:', e)
     config.read('config.ini')
     default_game_name = config['GAME_PROFILES'][f'game_name.{default_game_number}']
     game_profile_type = int(config['GAME_PROFILES'][f'game_profile_type.{default_game_number}'])
-    exit('TODO')
+    for i in range(1, game_profiles_counter + 1):
+        config.read('config.ini')
+        current_game_name = config['GAME_PROFILES'][f'game_name.{i}']
+        if config['GAME_PROFILES'][f'game_profile_type.{i}'] == '0':
+            if os.path.exists(f'game profiles/{current_game_name}.ini'):
+                print('game profile already exist:', current_game_name)
+            else:
+                config.clear()
+                print(f'Creating new game profile: {current_game_name}.ini')
+                locomotives_count = int(input('enter number of locomotives: '))
+                config['LOCOMOTIVES'] = {
+                    'locomotives_count': str(locomotives_count)
+                }
+                for i in range(1, locomotives_count + 1):
+                    config.set('LOCOMOTIVES', str(i), input(f'Enter locomotive name {i}: '))
+                selected_locomotive = config['LOCOMOTIVES']['1']
+                selected_locomotive_number = 1
+                for i in range(1, locomotives_count + 1):
+                    config[config['LOCOMOTIVES'][str(i)]] ={
+                        'thrust_position_number': input('Enter thrust position number: '),
+                        'brake_position_number': input('Enter brake position number: '),
+                        'brake_locomotive_position_number': input('Enter brake locomotive position number: '),
+                        'sand_position_number': input('Enter sand position number: '),
+                        'thrust_button_up': input('Enter thrust button up: '),
+                        'thrust_button_down': input('Enter thrust button down: '),
+                        'brake_button_up': input('Enter brake button up: '),
+                        'brake_button_down': input('Enter brake button down: '),
+                        'brake_locomotive_button_up': input('Enter brake locomotive button up: '),
+                        'brake_locomotive_button_down': input('Enter brake locomotive button down: '),
+                        'reverse_button_up': input('Enter reverse button up: '),
+                        'reverse_button_down': input('Enter reverse button down: '),
+                        'sand_button_up': input('Enter sand button up: '),
+                        'sand_button_down': input('Enter sand button down: ')
+                    }
+                try:
+                    configfile = open(f'game profiles/{current_game_name}.ini', 'w')
+                    config.write(configfile)
+                    print(f'Config {current_game_name}.ini created')
+                except Exception as e:
+                    print('Cannot create config file:', e)
+        elif config['GAME_PROFILES'][f'game_profile_type.{i}'] == '1':
+            if os.path.exists(f'game profiles/{current_game_name}.py'):
+                print('.py config already exists')
+            else:
+                print(f'Creating new game profile: {current_game_name}.py')
+                try:
+                    configfile = open(f'game profiles/{current_game_name}.py', 'w')
+                    configfile.write('''from pynput.keyboard import Key, Controller
+
+selected_locomotive = 'Locomotive 1'
+locomotives_count = 1
+but_timeout_timer = 5
+
+keyboard = Controller()
+
+def butpress(reverse_raw=0, thrust_raw=0, brake_raw=0, brake_locomotive_raw=0, sand_raw=0, but_timeout_raw=0, selected_locomotive_number=1):
+    global reverse_data, brake_data, brake_locomotive_data, sand_data, thrust_data, but_timeout_flag, selected_locomotive, thrust_pos, brake_pos''')
+                    print('Example .py config file created, remember to write your logic in it')
+                    exit()
+                except Exception as e:
+                    print('Cannot create .py config file:', e)
 
 def butpress():
-    global sand_counter, but_timeout, reverse_data, brake_data, brake_locomotive_data, sand_data, thrust_data
+    global sand_counter, but_timeout_flag, reverse_data, brake_data, brake_locomotive_data, sand_data, thrust_data
 
     if reverse_raw != reverse_data:
         if reverse_raw > reverse_data:
@@ -268,7 +330,7 @@ def butpress():
                 time.sleep(but_press_delay)
         reverse_data = reverse_raw
 
-    if but_timeout == 0:
+    if but_timeout_flag == 0:
         thrdelta = round((thrust_pos / 100) * thrust_raw)
         if thrust_data != thrdelta:
             if thrdelta > thrust_data:
@@ -279,7 +341,7 @@ def butpress():
                 thrust_data -= 1
                 keyboard.press(thrust_button_down)
                 keyboard.release(thrust_button_down)
-            but_timeout = 1
+            but_timeout_flag = 1
 
         brkdelta = round((brake_pos / 100) * brake_raw)
         if brake_data != brkdelta:
@@ -291,7 +353,7 @@ def butpress():
                 brake_data -= 1
                 keyboard.press(brake_button_down)
                 keyboard.release(brake_button_down)
-            but_timeout = 1
+            but_timeout_flag = 1
 
         brklocdelta = round((brakeloc_pos / 100) * brake_locomotive_raw)
         if brake_locomotive_data != brklocdelta:
@@ -303,7 +365,7 @@ def butpress():
                 brake_locomotive_data -= 1
                 keyboard.press(brake_locomotive_button_down)
                 keyboard.release(brake_locomotive_button_down)
-            but_timeout = 1
+            but_timeout_flag = 1
 
     if sand_raw != sand_data:
         sand_data = sand_raw
@@ -382,26 +444,21 @@ while ready_flag != 'ready':
 #     print("maxvalues: ", maximum_values)
 #     while True:
 
-while True:
-    if but_timeout == 1:
+while not KeyboardInterrupt:
+    if but_timeout_flag == 1:
         counter += 1
-        if counter >= 5:
+        if counter >= but_timeout_timer:
             counter = 0
-            but_timeout = 0
+            but_timeout_flag = 0
     if game_profile_selecting_flag == 0:
         sentphoto()
     else:
         sentphoto(default_game_name)
     getinfo()
     if game_profile_type == 1:
-        ButConfig.butpress(reverse_raw, thrust_raw, brake_raw, brake_locomotive_raw, sand_raw, but_timeout)
-        but_timeout = ButConfig.but_timeout
+        ButConfig.butpress(reverse_raw, thrust_raw, brake_raw, brake_locomotive_raw, sand_raw, but_timeout_flag, selected_locomotive_number)
+        but_timeout_flag = ButConfig.but_timeout_flag
         selected_locomotive = ButConfig.selected_locomotive
-        reverse_data = ButConfig.reverse_data
-        brake_data = ButConfig.brake_data
-        brake_locomotive_data = ButConfig.brake_locomotive_data
-        sand_data = ButConfig.sand_data
-        thrust_data = ButConfig.thrust_data
         selecting()
     else:
         butpress()
