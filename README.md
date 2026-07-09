@@ -17,7 +17,7 @@ Install ev3dev on your ev3 by following [this instruction](https://www.ev3dev.or
 ### 2. Connect
 Connect to your ev3 via SSH by following [this instruction](https://www.ev3dev.org/docs/tutorials/connecting-to-ev3dev-with-ssh/)
 ### 3. Cloning repo
-Clone this repo by this command:
+Clone repo by this command:
 ```
 git clone https://github.com/Svinada/Ev3Locomotive.git
 ```
