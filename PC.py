@@ -438,7 +438,7 @@ configsetup()
 
 sock.bind(("", port))
 sock.listen(clients_number)
-print("Server starts")
+print("Server starts on port:", port)
 con, addr = sock.accept()
 print("connection: ", con)
 print("client address: ", addr)
