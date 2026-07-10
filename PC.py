@@ -436,9 +436,14 @@ def selecting():
 
 configsetup()
 
-sock.bind(("", port))
-sock.listen(clients_number)
-print("Server starts on port:", port)
+try:
+    sock.bind(("", port))
+    sock.listen(clients_number)
+    print("Server starts on port:", port)
+except Exception as e:
+    print("Can't start server:", e)
+    input('Press enter to exit...')
+    exit()
 con, addr = sock.accept()
 print("connection: ", con)
 print("client address: ", addr)
@@ -449,11 +454,6 @@ while ready_flag != 'ready':
     ready_flag = con.recv(32).decode('utf-8')
     print(ready_flag)
 
-
-# if type == 1:
-#     maximum_values = json.loads(con.recv(1024).decode('utf-8'))
-#     print("maxvalues: ", maximum_values)
-#     while True:
 
 while True:
     try:

@@ -65,17 +65,17 @@ When script can't find `config.ini`, folder `game_profiles` or game profile in t
 Example `config.ini` looks like:
 ```
 [HOST]
-default_game_number = 1 ; <-- Number of config which will load at startup
+default_game_number = 1 <-- Number of config which will load at startup
 
 [NETWORK]
-port = 9600 ; <-- port which will use by client (ev3) for connecting and data exchange
-clients_number = 1 ; <-- beta variable, it's better not to change
+port = 9600 <-- port which will use by client (ev3) for connecting and data exchange
+clients_number = 1 <-- beta variable, it's better not to change
 
 [EV3]
-frequency = 30 ; <-- sensor refresh rate
+frequency = 30 <-- sensor refresh rate
 
 [GAME_PROFILES]
-game_profiles_counter = 2 ; <-- number of game profiles
+game_profiles_counter = 2 <-- number of game profiles
 game_name.1 = Derail Valley
 game_profile_type.1 = 0
 game_name.2 = Metrostroi
@@ -98,7 +98,7 @@ locomotives_count = 1
 1 = DE2
 
 [DE2]
-but_timeout_timer = 2 ; <-- delay between keystrokes, abstract value, I couldn't calculate the ratio to seconds :)
+but_timeout_timer = 2 <-- delay between keystrokes, abstract value, I couldn't calculate the ratio to seconds :)
 thrust_position_number = 11
 brake_locomotive_position_number = 7
 brake_position_number = 11
