@@ -221,3 +221,4 @@ And let's look inside folder `Pictures` in ev3 and find `DE2.bmp`:
 ![DE2 art](/Pictures/DE2.bmp)
 
 If you run script with default configs you should see `DE2` on ev3 display (after connecting to PC). If you press `left` or `right` button, selected locomotive will change, and you will see another photo of locomotive except `DE2Microshunter` which doesn't have photo and display will show name of this locomotive.
+For custom `.py` game profiles this work also, look line 25 (`selected_locomotive = '81-717'`) and 30 (`selected_locomotive = '81-760'`) in `Metrostroi.py` (Don't forget to make `selected_locomotive` as global variable!).
